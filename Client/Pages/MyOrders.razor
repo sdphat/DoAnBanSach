@@ -1,0 +1,58 @@
+﻿@page "/my-orders"
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@inject OrderService OrderService
+@inject PriceFormatter PriceFormatter
+
+<div class="row _content" style="margin-top: 32px">
+    <div class="offset-1 col-10 orders-wrapper">
+            @foreach (var order in Orders)
+           {
+            <div class="order-data-rows-wrapper row">
+                <div class="row" style="font-size: 1.05rem; font-weight: 600;">ĐH #@order.OrderId</div>
+                @foreach (var detail in order.Details)
+                {
+                    <div class="order-data-row row">
+                        <div class="col-2">
+                            <img style="width: 100%" src="@detail.Book.ImageURL" />
+                        </div>
+                        <div class="col-4">
+                            <span>@detail.Book.Title</span>
+                        </div>
+                        <div class="col-2">
+                            <span class="product-price">@PriceFormatter.Format(detail.Price)</span>
+                        </div>
+                        <div class="col-2">
+                            <span>@detail.Amount</span>
+                        </div>
+                        <div class="col-2 price">@PriceFormatter.Format(detail.TotalPrice)</div>
+                    </div>
+                }
+                <div class="row" style="background: white; margin: 0; padding: 0;"><div class="separator"></div></div>
+                <div class="row" style="background: white; margin: 0; padding: 0;">
+                    <div class="total">Thành tiền: @PriceFormatter.Format(order.TotalPrice)</div>
+                    <div class="status">Tình trạng: <span class="status @(order.Status == "Đã giao" ? "delivered" : "")">@order.Status</span></div>
+                </div>
+            </div>
+               
+           }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    public List<Order> Orders { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await authenticationStateTask;
+        var user = auth.User;
+        if(user.Identity.IsAuthenticated)
+        {
+            Orders = await OrderService.GetMyOrdersAsync();
+        }
+    }
+}

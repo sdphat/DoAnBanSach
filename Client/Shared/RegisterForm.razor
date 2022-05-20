@@ -1,0 +1,94 @@
+﻿@using DoAnBanSach.Shared
+@using System.Text.RegularExpressions
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+
+<form>
+    <div class="_input-group">
+        <div class="input-label">Email</div>
+        <input @bind="@registerModel.Username" @bind:event="oninput" class="input-text" placeholder="Nhập email" />
+        <div class="error">
+            @if(!string.IsNullOrWhiteSpace(registerModel.UsernameTakenError))
+            {
+                <div>@registerModel.UsernameTakenError</div>
+            }
+        </div>
+    </div>
+    <div class="_input-group">
+        <div class="input-label">Mật khẩu</div>
+        <input @bind="@registerModel.Password" @bind:event="oninput" class="input-text" type="password" placeholder="Nhập mật khẩu" />
+    </div>
+    <div class="_input-group">
+        <div class="input-label">Nhập lại mật khẩu</div>
+        <input @bind="@registerModel.PasswordConfirm" @bind:event="oninput" class="input-text" type="password" placeholder="Nhập lại mật khẩu" />
+        <div class="error">
+            @if(!string.IsNullOrWhiteSpace(registerModel.passwordMismatchedError))
+            {
+                <div>@registerModel.passwordMismatchedError</div>
+            }
+        </div>
+    </div>
+    <div class="_input-group">
+        <div class="input-label">Địa chỉ</div>
+        <input @bind="@registerModel.Address" @bind:event="oninput" class="input-text" placeholder="Nhập địa chỉ" />
+    </div>
+    <div class="_input-group">
+        <div class="input-label">Số điện thoại</div>
+        <input @bind="@registerModel.PhoneNumber" @bind:event="oninput" class="input-text" placeholder="Nhập số điện thoại" />
+    </div>
+    <button class="register-button" disabled="@(!registerModel.RegisterAllowed)" @onclick:preventDefault="true" @onclick="Register">Đăng ký</button>
+</form>
+
+@code {
+    private RegisterModel registerModel { get; set; } = new();
+    public async Task Register()
+    {
+        if(registerModel.Password != registerModel.PasswordConfirm)
+        {
+            registerModel.passwordMismatchedError = "Mật khẩu không khớp";
+            return;
+        } else {
+            registerModel.passwordMismatchedError = string.Empty;
+        }
+        RegisterPayload registerPayload = new RegisterPayload { Username = registerModel.Username, Address = registerModel.Address, Password = registerModel.Password, PhoneNumber = registerModel.PhoneNumber };
+        var result = await HttpClient.PostAsJsonAsync<RegisterPayload>("/api/auth/register", registerPayload);
+        if (!result.IsSuccessStatusCode)
+        {
+            registerModel.UsernameTakenError = await result.Content.ReadAsStringAsync();
+            return;
+        }
+        else
+        {
+            Navigation.NavigateTo("/", true);
+        }
+    }
+
+    private class RegisterModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string PasswordConfirm { get; set; }
+        public string Address { get; set; }
+        private string _PhoneNumber;
+        public string PhoneNumber {
+            get => _PhoneNumber; 
+            set
+            {
+                if(Regex.IsMatch(value, @"^\d*$"))
+                {
+                    _PhoneNumber = value;
+                }
+            }
+        }
+        public bool RegisterAllowed => !string.IsNullOrWhiteSpace(Username)
+            && !string.IsNullOrWhiteSpace(Password)
+            && !string.IsNullOrWhiteSpace(PasswordConfirm)
+            && !string.IsNullOrWhiteSpace(Address)
+            && !string.IsNullOrWhiteSpace(PhoneNumber)
+            && PhoneNumber.Length == 10;
+        public string passwordMismatchedError { get; set; }
+        public string UsernameTakenError { get; set; }
+    }
+}

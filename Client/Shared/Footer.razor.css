@@ -1,0 +1,32 @@
+﻿.wrapper {
+  display: flex;
+  padding: 16px 100px;
+  background: #eaeaea;
+}
+
+.wrapper > * {
+  flex: 1;
+}
+
+.wrapper > * + * {
+  margin-left: 8px;
+}
+
+.link-panel {
+  padding: 8px 0;
+}
+
+.link-panel > * + * {
+  margin-top: 8px;
+}
+
+.link {
+  display: block;
+  text-decoration: none;
+  color: black;
+}
+
+.link:active {
+  color: black;
+  text-decoration: none;
+}

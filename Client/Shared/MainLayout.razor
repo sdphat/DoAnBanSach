@@ -1,0 +1,25 @@
+﻿@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@inherits LayoutComponentBase
+@inject CheckoutService CheckoutService
+
+<CascadingValue Value=@cart>
+    <div class="page">
+        <Banner />
+        <NavMenu />
+        <div class="main">
+            @Body
+        </div>
+        <Footer />
+    </div>
+</CascadingValue>
+
+@code {
+    public Cart cart = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckoutService.LoadCart();
+        cart = CheckoutService.Cart;
+        CheckoutService.OnChange += StateHasChanged;
+    }
+}

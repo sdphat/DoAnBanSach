@@ -1,0 +1,86 @@
+﻿.catalog-search {
+    background: white;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    padding: 24px 8px;
+    height: max-content;
+}
+
+input[type=text]:focus {
+    outline: none;
+}
+
+
+.current-filters-wrapper {
+    padding: 12px 28px;
+}
+
+.current-filter-list {
+    display: inline-block;
+}
+
+.current-filter {
+    width: max-content;
+    background: #fef4e8;
+    padding: 8px;
+    margin-top: 8px;
+    margin-right: 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.remove-filter-btn {
+    cursor: pointer;
+}
+
+.clear-filter-btn {
+    background: white;
+    border: 1px solid #f7941E;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    width: max-content;
+    padding: 8px 12px;
+    margin-top: 8px;
+    margin-right: 8px;
+    transition: all 0.5s;
+}
+
+    .clear-filter-btn:hover {
+        color: #f7941E;
+    }
+
+.page-navigate-buttons {
+    background: white;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    display: flex;
+    justify-content: center;
+    padding-bottom: 8px;
+}
+
+.page-navigate-buttons > * + * {
+    margin-left: 4px;
+}
+
+.page-navigate-button {
+    background: white;
+    border: none;
+    border-radius: 4px;
+    width: 40px;
+    height: 40px;
+    transition: all 0.8s;
+}
+
+    .page-navigate-button:hover {
+        background: #fcdab0;
+    }
+
+.page-navigate-button.selected {
+    color: white;
+    background: #c92127;
+}
+
+    .page-navigate-button.selected:hover {
+        background: #c92127;
+    }
+
+    

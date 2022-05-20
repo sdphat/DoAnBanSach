@@ -1,0 +1,31 @@
+﻿.error {
+    padding-left: 12px;
+    margin-top: 4px;
+    color: red;
+    font-size: 0.9rem;
+}
+
+    .error > *::before {
+        content: "*";
+        display: inline-block;
+        vertical-align: sub;
+        font-weight: bolder;
+        padding-right: 4px;
+    }
+
+.register-button {
+    display: block;
+    margin: 32px auto 0 auto;
+    padding: 8px 0;
+    border-radius: 8px;
+    width: 60%;
+    font-size: 1.1em;
+    background: #C92127;
+    font-weight: 700;
+    color: white;
+    border: none;
+}
+
+.register-button:disabled {
+    background: gray;
+}

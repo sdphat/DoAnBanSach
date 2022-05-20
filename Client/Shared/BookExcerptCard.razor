@@ -1,0 +1,29 @@
+﻿@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared;
+@inject PriceFormatter PriceFormatter;
+
+@if (Excerpt != null)
+{
+    <div class="col col-md-3 col-12 book-excerpt">
+        <a href=@(Excerpt.OutOfStock == true ? "" : $"/book-detail/{Excerpt.BookId}") style="height: inherit">
+            <div class="book-excerpt-img-container">
+                <img class="book-excerpt-img" src="@Excerpt.ImageURL" />
+                @if(Excerpt.OutOfStock == true)
+                {
+                    <div style="position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.4);"></div>
+                    <div style="position: absolute; padding: 4px 24px; background: #C92127; width: max-content; height: max-content; font-size: 1.5rem; color: white; font-weight: bold;">Hết hàng</div>
+                }
+            </div>
+        </a>
+        <div class="book-excerpt-description">
+            <a href=@(Excerpt.OutOfStock == true ? "" : $"/book-detail/{Excerpt.BookId}")>
+                <div class="book-excerpt-title">@Excerpt.Title</div>
+            </a>
+            <div class="book-excerpt-price">@PriceFormatter.Format(Excerpt.Price)</div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public BookExcerpt Excerpt { get; set; }
+}

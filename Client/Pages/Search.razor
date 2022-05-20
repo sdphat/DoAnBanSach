@@ -1,0 +1,225 @@
+﻿@page "/search"
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject IProductService ProductService;
+@inject ICategoryService CategoryService;
+@inject PriceFormatter PriceFormatter;
+@inject NavigationManager NavigationManager;
+
+<div>
+    <div class="row m-0 p-0">
+        <div class="catalog-search col-3">
+            <div>
+                <div class="pb-1" style="font-size: 0.95rem; font-weight: 700;">Nhóm sản phẩm</div>
+                <div>
+                    @foreach (var category in categories)
+                    {
+                        <div class="my-1" style="color: #F7941E;font-weight: bold;font-size: 14px;">
+                            <span style="cursor: pointer;" @onclick="() => OnSelectCategory(category.CategoryId)">@category.Name</span>
+                        </div>
+                    }
+                    @*<div class="my-1" style="color: #F7941E;font-weight: bold;font-size: 14px; cursor: pointer;">Mọi thể loại</div>
+                        <div class="my-1" style="color: #F7941E;font-weight: bold;font-size: 14px; cursor: pointer;">Sách trong nước</div>
+                        <div style="padding-left: 30px;">
+                        <div style="font-size: 0.85rem; padding-top: 4px; cursor: pointer;">Văn học</div>
+                        <div style="font-size: 0.85rem; padding-top: 4px; cursor: pointer;">Sách thiếu nhi</div>
+                        <div style="font-size: 0.85rem; padding-top: 4px; cursor: pointer;">Kinh tế</div>
+                        </div>
+                        <div class="my-1" style="color: #F7941E;font-weight: bold;font-size: 14px; cursor: pointer;">Sách nước ngoài</div>*@
+                </div>
+            </div>
+            <div class="w-100 border-bottom my-2"></div>
+            <div>
+                <div class="pb-1" style="font-size: 0.95rem; font-weight: 700;">Giá</div>
+                <form @onsubmit:preventDefault="true" @onsubmit="OnSubmitFilterPrice" class="d-flex align-items-center">
+                    <span>Từ</span>
+                    <input @bind-value="inputFromPrice" type="text" inputmode="numeric" style="margin:0 8px; width: 100%" />
+                    <span>Đến</span>
+                    <input @bind-value="inputToPrice" type="text" inputmode="numeric" style="margin-left:8px; width: 100%" />
+                    <button style="display: none"></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-9">
+            <div style="background: white;">
+                @if (selectedFilters.Count > 0)
+                {
+                    <div class="current-filters-wrapper">
+                        <span style="padding-right: 4px">Lọc theo : </span>
+                        <div class="current-filter-list">
+                            @foreach (var selectedFilter in selectedFilters)
+                            {
+                                <div class="current-filter">
+                                    <div style="font-size: 0.85rem;padding-right: 12px;color: #f7941e;">@selectedFilter.name</div>
+                                    <img src="/btn_remove_orange.png" class="remove-filter-btn" @onclick="() => OnRemoveFilter(selectedFilter.type)" />
+                                </div>
+                            }
+                            <button class="clear-filter-btn" @onclick="() => OnRemoveAllFilter()">
+                                Xóa tất cả
+                            </button>
+                        </div>
+                    </div>
+                } 
+                @if(bookExcerpts == null || bookExcerpts.Count == 0)
+                {
+                    <p style="padding-left: 24px;">Không tìm thấy sản phẩm nào</p>
+                }
+            </div>
+            @if ((bookExcerpts != null && bookExcerpts.Count > 0) && _header != null)
+            {
+                <BookExcerpts Header=@_header Excerpts=@bookExcerpts />
+                @if (maxPage > 1)
+                {
+                    <div class="page-navigate-buttons">
+                        @if (page > 1)
+                        {
+                            <button class="page-navigate-button" @onclick="() => LoadPage(page - 1)"><img aria-hidden="true" src="/left_orange.png" /></button>
+                        }
+                        @if (page - pageWindow > 1)
+                        {
+                            <button @onclick="() => LoadPage(1)" class="page-navigate-button">1</button>
+                        }
+                        @if (page - pageWindow > 2)
+                        {
+                            <div style="height: 40px; display: grid; place-items: center;">...</div>
+                        }
+                        @for (var i = -pageWindow; i <= pageWindow; i++)
+                        {
+                            int p = page + i;
+                            if (1 <= p && p <= maxPage)
+                            {
+                                if (p == page)
+                                {
+                                    <button class="page-navigate-button selected">@p</button>
+                                }
+                                else
+                                {
+                                    <button @onclick="() => LoadPage(p)" class="page-navigate-button">@p</button>
+                                }
+                            }
+                        }
+
+                        @if (maxPage - page > pageWindow)
+                        {
+                            <div style="height: 40px; display: grid; place-items: center;">...</div>
+                        }
+                        @if (page + pageWindow < maxPage)
+                        {
+                            <button @onclick="() => LoadPage(maxPage)" class="page-navigate-button">@maxPage</button>
+                        }
+                        @if (page < maxPage)
+                        {
+                            <button class="page-navigate-button" @onclick="() => LoadPage(page + 1)"><img aria-hidden="true" src="/right_orange.png" /></button>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    public string? searchString;
+    public int categoryId;
+    public int pageWindow = 1;
+    public int page = 1;
+    public int maxPage = 10;
+    private List<BookExcerpt> bookExcerpts = new List<BookExcerpt>();
+    private List<Category> categories = new List<Category>();
+    private List<SelectedFilter> selectedFilters = new List<SelectedFilter>();
+    private FilterInfo filterInfo = new FilterInfo();
+    private string inputFromPrice = string.Empty;
+    private string inputToPrice = string.Empty;
+    private string _header = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        selectedFilters = new();
+        categories = await CategoryService.GetCategoriesAsync();
+        NavigationManager.TryGetQueryString<string>("searchString", out searchString);
+        try
+        {
+            NavigationManager.TryGetQueryString<int>("categoryId", out categoryId);
+            Category category = categories.First(c => c.CategoryId == categoryId);
+            ReplaceNewSelectedFilter(new SelectedFilter { type = "CategoryId", name = $"Nhóm sản phẩm: {category.Name}", value = category.CategoryId });
+        }
+        catch (Exception ex)
+        {
+
+        }
+        filterInfo.SearchString = searchString ?? string.Empty;
+        await UpdateBookExcerpts();
+    }
+
+    private async Task UpdateBookExcerpts()
+    {
+        filterInfo = new FilterInfo();
+        filterInfo.SearchString = searchString ?? string.Empty;
+        foreach (var selectedFilter in selectedFilters)
+        {
+            filterInfo.GetType().GetProperty(selectedFilter.type).SetValue(filterInfo, selectedFilter.value, null);
+        }
+        var result = await ProductService.GetBooksAsync(filterInfo, page);
+        bookExcerpts = result.Items;
+        Console.WriteLine(result.Pages);
+        maxPage = result.Pages;
+        StateHasChanged();
+    }
+
+    private void ReplaceNewSelectedFilter(SelectedFilter selectedFilter)
+    {
+        SelectedFilter? found = selectedFilters.FirstOrDefault(c => c.type == selectedFilter.type);
+        selectedFilters.Remove(found);
+        selectedFilters.Add(selectedFilter);
+        page = 1;
+    }
+
+    private async Task OnSelectCategory(int categoryId)
+    {
+        Category category = categories.Find(c => c.CategoryId == categoryId);
+        ReplaceNewSelectedFilter(new SelectedFilter { type = "CategoryId", name = $"Nhóm sản phẩm: {category.Name}", value = category.CategoryId });
+        page = 1;
+        await UpdateBookExcerpts();
+    }
+
+    private async Task OnSubmitFilterPrice()
+    {
+        selectedFilters = selectedFilters.Where(x => x.type != "FromPrice" && x.type != "ToPrice").ToList();
+        if (!string.IsNullOrWhiteSpace(inputFromPrice))
+        {
+            decimal fromPrice = decimal.Parse(inputFromPrice);
+            ReplaceNewSelectedFilter(new SelectedFilter { type = "FromPrice", name = $"Giá từ: {PriceFormatter.Format(fromPrice)}", value = fromPrice });
+        }
+        if (!string.IsNullOrWhiteSpace(inputToPrice))
+        {
+            decimal toPrice = decimal.Parse(inputToPrice);
+            ReplaceNewSelectedFilter(new SelectedFilter { type = "ToPrice", name = $"Giá đến: {PriceFormatter.Format(toPrice)}", value = toPrice });
+        }
+        inputFromPrice = string.Empty;
+        inputToPrice = string.Empty;
+        await UpdateBookExcerpts();
+    }
+
+    private async Task OnRemoveFilter(string type)
+    {
+        selectedFilters.Remove(selectedFilters.First(x => x.type == type));
+        await UpdateBookExcerpts();
+        page = 1;
+    }
+
+    private async Task OnRemoveAllFilter()
+    {
+        selectedFilters = new List<SelectedFilter>();
+        await UpdateBookExcerpts();
+        page = 1;
+    }
+
+    private async Task LoadPage(int page)
+    {
+        this.page = page;
+        UpdateBookExcerpts();
+    }
+}
+

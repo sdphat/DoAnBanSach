@@ -1,0 +1,125 @@
+﻿@page "/cart"
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@using Microsoft.AspNetCore.Authorization
+@inject CheckoutService CheckoutService
+@inject IProductService ProductService
+@inject HttpClient HttpClient
+@inject PriceFormatter PriceFormatter
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+
+<div class="title">Giỏ hàng (@Cart.Items.Count sản phẩm)</div>
+@if(Cart.Items.Count == 0)
+{
+    <div class="empty-cart-wrapper">
+        <div class="empty-cart-inner-wrapper">
+            <img src="/ico_emptycart.svg" />
+            <div style="color: #333333; font-size: 14px;">Chưa có sản phẩm trong giỏ hàng của bạn.</div>
+            <a href="/search"><button class="shopping-button">Mua sắm ngay</button></a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row _content" style="margin-top: 32px">
+        <div class="col-8">
+            <div class="cart-header row">
+                <div class="col-2"></div>
+                <div class="col-5">Sản phẩm</div>
+                <div class="col-2">Số lượng</div>
+                <div class="col-2">Thành tiền</div>
+                <div class="col-1"></div>
+            </div>
+            <div class="cart-data-rows-wrapper row">
+                @foreach (var book in Books)
+                {
+                    var cartItem = Cart.Items.FirstOrDefault(i => i.BookId == book.BookId);
+                    @if (cartItem != null)
+                    {
+                        <div class="cart-data-row row">
+                            <div class="col-2">
+                                <a href=@($"/book-detail/{cartItem.BookId}") style="display: block">
+                                    <img style="width: 100%; height: 100%" src="@book.ImageURL" />
+                                </a>
+                            </div>
+                            <div class="col-5">
+                                <div style="display: flex; flex-direction: column; justify-content: space-between">
+                                    <span>@book.Title</span>
+                                    <span class="product-price">@PriceFormatter.Format(book.Price)</span>
+                                </div>
+                            </div>
+                            <div class="col-2" style="display: flex; align-items: center;">
+                                <div class="amount-input-wrapper">
+                                    <div style="display: grid; place-items: center; cursor: pointer;">
+                                        <img @onclick="() => ChangeBookAmount(book.BookId, cartItem.Amount - 1)" style="height: 2.5px; aspect-ratio: 24 / 4;" src="./ico_minus2x.png" aria-disabled="true" />
+                                    </div>
+                                    <input @onchange="(e) => ChangeBookAmount(book.BookId, int.Parse(e.Value.ToString()))" type="text" inputmode="numeric" value="@cartItem.Amount" />
+                                    <div style="display: grid; place-items: center; cursor: pointer;">
+                                        <img @onclick="() => ChangeBookAmount(book.BookId, cartItem.Amount + 1)" style="width: 16px; height: 16px;" src="./ico_plus2x.png" aria-disabled="true" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-2 sub-total price">@PriceFormatter.Format(cartItem.TotalPrice)</div>
+                            <div class="col-1" style="display: flex; align-items: center; justify-content: center;"><span @onclick="() => RemoveProduct(book.BookId)" class="oi oi-trash" style="font-size: 1.2rem; cursor: pointer;"></span></div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="col-4" style="position: relative;">
+            <div class="checkout-block" style="top: 16px; position: sticky;">
+                <div class="checkout-price-line">
+                    <div class="checkout-price-title">Thành tiền</div>
+                    <div class="price checkout-price">@PriceFormatter.Format(Cart.TotalPrice)</div>
+                </div>
+                <div class="separator"></div>
+                <button @onclick="Checkout" class="checkout-btn">THANH TOÁN</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    public Cart Cart { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    public List<Book> Books { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Books = Cart.Items.Select(i => i.Book).ToList();
+    }
+
+    private async Task RemoveProduct(int productId)
+    {
+        await CheckoutService.RemoveItemAsync(productId);
+    }
+
+    private async Task Checkout()
+    {
+        var success = await CheckoutService.Checkout();
+        if (success)
+        {
+            Navigation.NavigateTo("/my-orders", true);
+        }
+        else
+        {
+            Navigation.NavigateTo("/account/login", true);
+        }
+    }
+
+    private async Task ChangeBookAmount(int bookId, int bookAmount)
+    {
+        try
+        {
+            await CheckoutService.UpdateAmount(bookId, bookAmount);
+        } catch(Exception ex)
+        {
+            if(ex.Message == "Overflow") {
+                await JsRuntime.InvokeVoidAsync("alert", $"Vượt quá số lượng");
+            }
+        }
+    }
+}

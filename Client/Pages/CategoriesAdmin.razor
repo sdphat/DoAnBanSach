@@ -1,0 +1,188 @@
+﻿@page "/admin/categories"
+@layout AdminLayout
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@using Microsoft.AspNetCore.Authorization
+@inject IJSRuntime JsRuntime
+@inject ICategoryService CategoryService
+@inject PriceFormatter PriceFormatter
+
+
+
+<Modal IsOpen="@IsOpen" OnCloseModal=@(() => IsOpen = false)>
+    <div class="row category-form-wrapper" style="width: 50vw;">
+        @if (Mode == "edit")
+        {
+            <div class="row" style="margin-bottom: 16px;">
+                <div class="col-6" style="font-size: 1.1rem">
+                    <span style="font-size: 1.1rem; font-weight: bold;">Mã thể loại: </span>@Category.CategoryId
+                </div>
+            </div>
+        }
+        <form class="row category-form">
+            <div class="_input-group col-12">
+                <div class="input-label">Tên thể loại</div>
+                <input class="input-text" @bind="Category.Name" />
+            </div>
+            @if (Mode == "edit")
+            {
+                <button @onclick="() => OnUpdate(Category)" @onclick:preventDefault="true" class="update-button">Cập nhật</button>
+            }
+            @if (Mode == "create")
+            {
+                <button class="create-button" @onclick="() => OnCreateCategory(Category)" @onclick:preventDefault="true">Thêm</button>
+            }
+        </form>
+    </div>
+</Modal>
+
+<button class="create-button" style="margin-bottom: 16px; padding: 12px 48px; font-size: 1.1rem;" @onclick="@OnOpenCreateModal">Thêm</button>
+<div class="table">
+    <div class="row header-row">
+        <div class="col-1 row p-0">
+            <div class="col-6 p-0">#</div>
+        </div>
+        <div class="col-5">Mã thể loại</div>
+        <div class="col-5">Tên thể loại</div>
+        <div class="col-1"></div>
+    </div>
+    <div class="content-rows-wrapper">
+        @for (var i = 0; i < Categories.Count; i++)
+        {
+            Category category = Categories[i];
+            <div class="row category-row">
+                <div class="col-1 row p-0">
+                    <div class="col-6" style="padding: 8px">@((page-1)*itemsPerPage+i+1)</div>
+                </div>
+                <div class="col-5">@category.CategoryId</div>
+                <div class="col-5">@category.Name</div>
+                <div class="col-1">
+                    <i class="oi oi-eye view-icon" style="cursor: pointer;" @onclick=@(() => OnViewCategory(category))></i>
+                    <i class="oi oi-trash remove-icon" style="cursor: pointer;" @onclick=@(() => OnRemoveCategory(category))></i>
+                </div>
+            </div>
+        }
+    </div>
+    @if (maxPage > 1)
+    {
+        <div class="page-navigate-buttons">
+            @if (page > 1)
+            {
+                <button class="page-navigate-button" @onclick="() => LoadPage(page - 1)"><img aria-hidden="true" src="/left_orange.png" /></button>
+            }
+            @if (page - pageWindow > 1)
+            {
+                <button @onclick="() => LoadPage(1)" class="page-navigate-button">1</button>
+            }
+            @if (page - pageWindow > 2)
+            {
+                <div style="height: 40px; display: grid; place-items: center;">...</div>
+            }
+            @for (var i = -pageWindow; i <= pageWindow; i++)
+            {
+                int p = page + i;
+                if (1 <= p && p <= maxPage)
+                {
+                    if (p == page)
+                    {
+                        <button class="page-navigate-button selected">@p</button>
+                    }
+                    else
+                    {
+                        <button @onclick="() => LoadPage(p)" class="page-navigate-button">@p</button>
+                    }
+                }
+            }
+
+            @if (maxPage - page > pageWindow)
+            {
+                <div style="height: 40px; display: grid; place-items: center;">...</div>
+            }
+            @if (page + pageWindow < maxPage)
+            {
+                <button @onclick="() => LoadPage(maxPage)" class="page-navigate-button">@maxPage</button>
+            }
+            @if (page < maxPage)
+            {
+                <button class="page-navigate-button" @onclick= "() => LoadPage(page + 1)"><img aria-hidden="true" src="/right_orange.png" /></button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    public bool IsOpen { get; set; } = false;
+    public string Mode { get; set; } = "create";
+    public List<Category> Categories { get; set; } = new();
+    private Category Category { get; set; } = new();
+    public int pageWindow = 1;
+    public int page = 1;
+    public int maxPage = 10;
+    public int itemsPerPage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadPage(1);
+    }
+
+    public void OnOpenCreateModal()
+    {
+        Category = new();
+        IsOpen = true;
+        Mode = "create";
+    }
+
+    public void OnViewCategory(Category category)
+    {
+        Category = category;
+        Mode = "edit";
+        IsOpen = true;
+        StateHasChanged();
+    }
+
+    public async void OnRemoveCategory(Category category)
+    {
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn xóa?");
+        if (confirm)
+        {
+            await CategoryService.RemoveCategory(category.CategoryId);
+            Categories.Remove(category);
+            if (Category.CategoryId == category.CategoryId)
+            {
+                Category = new();
+            }
+            StateHasChanged();
+        }
+    }
+
+    public async void OnCreateCategory(Category category)
+    {
+        await CategoryService.CreateCategory(category);
+        Categories = Categories.Append(category).ToList();
+        IsOpen = false;
+        StateHasChanged();
+    }
+
+    public async void OnUpdate(Category category)
+    {
+        await CategoryService.UpdateCategory(category);
+        var index = Categories.FindIndex(b => b.CategoryId == category.CategoryId);
+        Categories[index] = category;
+        Category = new();
+        Mode = "create";
+        IsOpen = false;
+        StateHasChanged();
+    }
+
+    public async Task LoadPage(int page)
+    {
+        this.page = page;
+        var response = await CategoryService.GetCategoriesAsync(page);
+        itemsPerPage = response.ItemsPerPage;
+        maxPage = response.Pages;
+        Categories = response.Items;
+        StateHasChanged();
+
+    }
+}
+

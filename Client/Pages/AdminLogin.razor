@@ -1,0 +1,16 @@
+﻿@page "/admin/login"
+@layout EmptyLayout
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<fieldset>
+    <legend><i class="fa fa-user-circle-o" aria-hidden="true"></i></legend>
+    <p>ĐĂNG NHẬP ADMIN</p>
+    <input type="text" id="uname" name="uname" placeholder="a@gmail.com or username">
+    <input type="password" id="pass" name="pass" placeholder="*********">
+    <NavLink class="nav-link" href="/admin" >
+        <input type="submit" id="submitbtn" value="ĐĂNG NHẬP" class="btn-log">
+    </NavLink>
+</fieldset>
+@code {
+
+}

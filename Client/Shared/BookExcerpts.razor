@@ -1,0 +1,37 @@
+﻿@using DoAnBanSach.Shared;
+
+<div>
+    @if(!string.IsNullOrWhiteSpace(Header))
+    {
+        <div class="header-wrapper"><div class="header">@Header</div></div>
+    }
+    <div class="container wrapper">
+        <div class="container excerpts">
+            @foreach (var row in _rows)
+            {
+                <div class="row">
+                    @foreach (var bookExcerpt in row)
+                    {
+                        <BookExcerptCard Excerpt=@bookExcerpt />
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Header { get; set; } = "";
+    [Parameter] public List<BookExcerpt> Excerpts { get; set; } = new List<BookExcerpt>();
+    private List<List<BookExcerpt>> _rows = new List<List<BookExcerpt>>();
+    private int _rowLength = 4;
+
+    protected override void OnParametersSet()
+    {
+        _rows = new List<List<BookExcerpt>>();
+        for (var i = 0; i <= Excerpts.Count / _rowLength; i++)
+        {
+            _rows.Add(Excerpts.Skip(i * _rowLength).Take(_rowLength).ToList());
+        }
+    }
+}

@@ -1,0 +1,25 @@
+﻿.wrapper {
+    background: white;
+    padding: 16px 16px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.excerpts > * + * {
+    margin-top: 36px;
+}
+
+.header-wrapper {
+    padding: 12px 36px;
+    background: #FCDAB0;
+    display: flex;
+    align-items: center;
+}
+
+.header {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.excerpts {
+    padding: 0 12px;
+ }

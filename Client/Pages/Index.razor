@@ -1,0 +1,29 @@
+﻿@page "/"
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@inject IProductService ProductService
+<PageTitle>Trang chủ</PageTitle>
+
+<div class="wrapper">
+    <div>
+        <BookExcerpts Header=@headerBestSellers Excerpts=@bestSellers />
+    </div>
+    <div>
+        <BookExcerpts Header=@headerNewBookExcerpts Excerpts=@newBookExcerpts />
+    </div>
+</div>
+
+@code {
+    
+    private List<BookExcerpt> bestSellers = new();
+    private string headerBestSellers = "Sách bán chạy";
+    private List<BookExcerpt> newBookExcerpts = new();
+    private string headerNewBookExcerpts = "Sách mới";
+  
+
+    protected override async Task OnInitializedAsync()
+    {
+            bestSellers = await ProductService.GetBestSellers();
+            newBookExcerpts = await ProductService.GetNewBooks();
+    }
+}

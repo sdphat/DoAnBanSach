@@ -1,0 +1,140 @@
+﻿.title {
+    margin: 0px 0;
+    font-weight: 600;
+    font-family: 'Nunito Sans';
+    color: #333333;
+    line-height: 20px;
+}
+
+.order-header {
+    background: white;
+    padding: 0;
+}
+
+.price {
+    line-height: 1.2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.checkout-price {
+    line-height: 1.4rem;
+    font-size: 1.4rem;
+}
+
+.checkout-price-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.checkout-block {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    height: max-content;
+}
+
+.checkout-price-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.separator {
+    transform: translateX(15%);
+    width: 80%;
+    margin: 4px 0;
+    border-top: 1px #bbbbbb solid;
+}
+
+.checkout-btn {
+    width: 100%;
+    background: #C92127;
+    border: none;
+    padding: 8px 0;
+    margin-top: 28px;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.orders-wrapper > * + * {
+    margin-top: 100px;
+}
+
+.order-data-rows-wrapper {
+    padding: 8px 12px;
+    background: white;
+}
+
+.order-data-row {
+    background: white;
+    padding: 8px 0;
+    margin: 0;
+    min-height: 160px;
+}
+
+.order-header {
+    background: white;
+    padding: 8px 0;
+    margin: 0;
+}
+
+    .order-data-row > * {
+        display: flex;
+        align-content: flex-start;
+        align-items: stretch;
+    }
+
+.sub-total {
+    align-self: center;
+}
+
+.amount-input-wrapper {
+    display: flex;
+    height: max-content;
+    padding: 4px;
+    width: max-content;
+    align-items: center;
+    border: 2px rgb(224 224 224 / 88%) solid;
+}
+
+.product-price {
+    color: #333;
+    font-weight: 700;
+}
+
+.amount-input-wrapper input {
+    border: none;
+    width: 30px;
+}
+
+    .amount-input-wrapper input:focus {
+        outline: none;
+    }
+
+_content, _content * {
+    font-size: 15px;
+}
+
+.status {
+    line-height: 1.05rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 0;
+    margin-top: 16px;
+}
+
+    .status.delivered {
+        color: #008000;
+    }
+    
+
+.total {
+    line-height: 1.05rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 0;
+    margin-top: 16px;
+}

@@ -1,0 +1,106 @@
+﻿@page "/admin/accounts"
+@layout AdminLayout
+@using System.Security.Claims
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@using Microsoft.AspNetCore.Authorization
+@using System.Web
+@inject UserService UserService
+
+<style>
+    .optionButton {
+        width: 13rem;
+        font-size: 1.1rem;
+    }
+
+    .btnControl {
+        width: 10rem;
+    }
+</style>
+
+<h1>Admin Nhân Viên</h1>
+<div>
+    <a href="/adminthemnhanvien"><button type="button" class="btn btn-primary btn-lg optionButton">Thêm Nhân Viên</button></a>
+    <div class="form-group" style="width: 50%;float: right;margin-left: 2rem;">
+        <button type="submit" class="btn btn-primary" style="float: right; margin-left:0.1rem; font-size: 1.1rem">Tìm kiếm </button>
+        <input type="text" class="form-control" id="searchValue" placeholder="Nhập thông tin..." style="float: right;width: 20rem; font-size: 1.1rem">
+    </div>
+</div>
+
+<table id="tableContent" class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Mã Nhân Viên</th>
+            <th scope="col">Tên Nhân Viên</th>
+            <th scope="col">Ngày Sinh</th>
+            <th scope="col">Địa Chỉ</th>
+            <th scope="col">SĐT</th>
+            <th scope="col">Quyền</th>
+            <th scope="col">Trạng Thái</th>
+            <th scope="col" style="width: 10rem;">Chức Năng</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th scope="row">1</th>
+            <td>NV01</td>
+            <td>Huyen</td>
+            <td>12/05/2001</td>
+            <td>TPHCM</td>
+            <td>0853335392</td>
+            <td>1</td>
+            <td>Đang hoạt động</td>
+            <td>
+                <button class="btn btn-primary btnControl" type="submit" style="background-color: red;">Khóa Nhân Viên</button>
+                <a href="#">
+                    <button class="btn btn-primary btnControl" type="submit" style="background-color: green;margin-top: 0.3rem;">Sửa Nhân Viên</button>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">1</th>
+            <td>NV02</td>
+            <td>Nhân Viên 2</td>
+            <td>12/05/2001</td>
+            <td>TPHCM</td>
+            <td>0853335392</td>
+            <td>1</td>
+            <td>Đang hoạt động</td>
+            <td>
+                <button class="btn btn-primary btnControl" type="submit" style="background-color: red;">Khóa Nhân Viên</button>
+                <a href="#">
+                    <button class="btn btn-primary btnControl" type="submit" style="background-color: green;margin-top: 0.3rem;">Sửa Nhân Viên</button>
+                </a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    public bool IsOpen { get; set; } = false;
+    public string Mode { get; set; } = "create";
+    public List<PublicUser> PublicUsers{ get; set; } = new();
+    private PublicUser Book { get; set; } = new();
+    public int pageWindow = 1;
+    public int page = 1;
+    public int maxPage = 10;
+    public int itemsPerPage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var result = await UserService.GetUsers(page);
+        
+    }
+
+    public async Task LoadPage(int page)
+    {
+        this.page = page;
+        var response = await UserService.GetUsers(page);
+        itemsPerPage = response.ItemsPerPage;
+        maxPage = response.Pages;
+        PublicUsers = response.Items;
+        StateHasChanged();
+
+    }
+}

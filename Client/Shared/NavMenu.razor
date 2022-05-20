@@ -1,0 +1,114 @@
+﻿@using System.Web;
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Newtonsoft.Json
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject SignOutSessionStateManager SignOutManager;
+@inject NavigationManager Navigation;
+@inject ICategoryService CategoryService;
+@inject CheckoutService CheckoutService;
+@inject HttpClient HttpClient;
+
+<div class="wrapper">
+    @*logo*@
+    <div class="nav-item-block">
+        <a href="#">
+            <img src="/fahasa_logo.png" style="position: relative; top: -6px;" />
+        </a>
+    </div>
+
+    <div class="nav-item-block">
+        @*category menu button + category menu*@
+        <div class="category-menu-pack">
+            <div class="category-menu-btn">
+                <img src="/ico_menu.svg" aria-hidden="true" class="category-menu-icon" />
+                <i class="oi oi-chevron-bottom" style="position: relative; left: -2px; font-size: 12px; color: gray;"></i>
+            </div>
+            <div class="category-menu-wrapper" style="z-index: 1000">
+                <div class="category-menu">
+                    <div class="category-list-wrapper">
+                        <div class="category-list-header">Danh mục sản phẩm</div>
+                        @foreach (var category in Categories)
+                        {
+                            <a style="cursor: pointer;" @onclick=@(() => Navigation.NavigateTo($"/search?categoryId={category.CategoryId}", true)) class="category">@category.Name</a>
+                        }
+                    </div>
+              @*      <div class="sub-category-list-wrapper" style="display: inline-block">
+                        <div class="sub-category-header" style="">Sách trong nước</div>
+                        <a href="#" class="sub-category">Văn học</a>
+                        <a href="#" class="sub-category">Sách thiếu nhi</a>
+                        <a href="#" class="sub-category">Kinh tế</a>
+                    </div>*@
+                </div>
+            </div>
+        </div>
+        @*searchbar*@
+        <form class="searchbar" action="/search">
+            <input name="searchString" class="searchbar-input" type="text" placeholder="Tìm kiếm sản phẩm mong muốn..." />
+            <button href="/search" class="searchbar-search-btn"><img src="/ico_search_white.svg" aria-hidden="true" style="height: 24px" /></button>
+        </form>
+    </div>
+    <div class="action-btns nav-item-block">
+        @*cart*@
+        <a href="/cart" class="action-btn">
+            <div class="action-icon-wrapper">
+                <div style="position: relative;">
+                    <img src="/ico_cart_gray.svg" style="height: 24px;" />
+                    <span class="cart-items">@quantity</span>
+                </div>
+            </div>
+            <div class="action-label">Giỏ hàng</div>
+        </a>
+        @*profile menu*@
+        <div class="action-btn login-action-btn">
+            <a href="/account/login" class="action-icon-wrapper">
+                <div style="position: relative;">
+                    <img src="/ico_account_gray.svg" style="height: 24px;" />
+                </div>
+            </a>
+            <a href="/account/login" class="action-label">Tài khoản</a>
+            <div class="account-options-wrapper" style="z-index: 1000">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="logged-in-account-options">
+                            <a href="#" class="logged-in-account-option"><img src="/ico_account_gray.svg" />Thông tin tài khoản</a>
+                            <a href="/my-orders" class="logged-in-account-option"><img src="/ico_bill_gray.svg" />Đơn hàng của tôi</a>
+                            <a style="cursor: pointer" @onclick="Logout" class="logged-in-account-option"><img src="/ico_logout_gray.svg" />Thoát tài khoản</a>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="account-options">
+                            @*login*@
+                            <a href="/account/login" class="login-btn">Đăng nhập</a>
+                            @*logout*@
+                            <a href="/account/register" class="logout-btn">Đăng ký</a>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public Cart Cart { get; set; }
+    public List<Category> Categories { get; set; } = new();
+    private int quantity = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = await CategoryService.GetCategoriesAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        quantity = Cart.Items.Count;
+    }
+
+    private async Task Logout()
+    {
+        await HttpClient.PostAsync("/api/auth/logout", null);
+        Navigation.NavigateTo(Navigation.Uri, true);
+    }
+}

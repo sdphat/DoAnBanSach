@@ -1,0 +1,89 @@
+﻿@page "/book-detail/{bookId:int}"
+@using DoAnBanSach.Client.Services
+@using DoAnBanSach.Shared
+@inject NavigationManager Navigation;
+@inject PriceFormatter PriceFormatter
+@inject IProductService ProductService
+@inject CheckoutService CheckoutService
+@inject IJSRuntime JsRunTime
+
+<div class="row" style="padding: 16px; background: white; border-radius: 8px;">
+    <div class="col-5">
+        <div>
+            <img style="width: 100%; aspect-ratio: 1/1" src="@Book.ImageURL" />
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 16px;">
+            <button @onclick="AddToCart" style="flex: 1" class="buy-btn"><div style="display: flex; align-items: center;"><img src="./icon-cart.svg" style="margin-right: 0.25rem;"/>Thêm vào giỏ hàng</div></button>
+            <button @onclick="AddToCartRedirect" style="flex: 1" class="add-to-cart-btn">Mua ngay</button>
+        </div>
+    </div>
+    <div class="col-7">
+        <div style="font-size: 1.7em;font-weight: 600;color: #333;line-height: 1.5em;overflow-wrap: break-word;padding-bottom: 16px;">@Book?.Title</div>
+        <div class="row">
+            <div class="col-6" style="font-size: 0.9rem;">Nhà xuất bản: <span style="font-weight: bold">@Book?.Publisher?.Name</span></div>
+            <div class="col-6" style="font-size: 0.9rem;">Tác giả: <span style="font-weight: bold">@Book?.Author?.Name</span></div>
+        </div>
+        <div style="margin: 20px 0;font-size: 32px;line-height: 32px;color: #C92127;font-weight: 700;">
+            @(Book == null? "" : PriceFormatter.Format(Book.Price))
+        </div>
+        <div style="font-weight: bold; display: flex; align-items: center;">
+            Số lượng:
+            <div style="display: inline-block; margin-left: 48px;">
+                <div class="amount-input-wrapper">
+                    <div style="display: grid; place-items: center; cursor: pointer;">
+                        <img @onclick="() => Amount--" style="height: 2.5px; aspect-ratio: 24 / 4;" src="./ico_minus2x.png" aria-disabled="true" />
+                    </div>
+                    <input @bind="@Amount" type="text" inputmode="numeric" />
+                    <div style="display: grid; place-items: center; cursor: pointer;">
+                        <img @onclick="() => Amount++" style="width: 16px; height: 16px;" src="./ico_plus2x.png" aria-disabled="true" />
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int BookId { get; set; }
+    private int _amount = 1;
+    public int Amount {
+        get
+        {
+            return _amount;
+        }
+        set
+        {
+            _amount = value > 0 ? value: 1;
+        } 
+    }
+    public Book Book { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Book = await ProductService.GetBook(BookId);
+    }
+
+    public async Task<bool> AddToCart()
+    {
+        try
+        {
+            await CheckoutService.AddAmount(BookId, Amount);
+            return true;
+        } catch(Exception ex)
+        {
+            await JsRunTime.InvokeVoidAsync("alert", $"Vượt quá số lượng: {Book.Amount}");
+            Amount = Book.Amount;
+            return false;
+        }
+    }
+
+    public async void AddToCartRedirect()
+    {
+        if(await AddToCart())
+        {
+            Navigation.NavigateTo("/cart", true);
+        }
+    }
+}

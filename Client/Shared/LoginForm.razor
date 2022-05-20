@@ -1,0 +1,54 @@
+﻿@using DoAnBanSach.Shared
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+
+<form>
+    <div class="_input-group">
+        <div class="input-label">Email</div>
+        <input @bind="@loginModel.Username"  @bind:event="oninput" class="input-text" placeholder="Nhập email" />
+    </div>
+    <div class="_input-group">
+        <div class="input-label">Mật khẩu</div>
+        <input @bind="@loginModel.Password"  @bind:event="oninput" class="input-text" type="password" placeholder="Nhập mật khẩu" />
+    </div>
+    @if (!string.IsNullOrWhiteSpace(loginModel.Error))
+    {
+        <div class="error">
+            <div>@loginModel.Error</div>
+        </div>
+    }
+    <button disabled="@(!loginModel.LoginAllowed)" @onclick="Login" @onclick:preventDefault="true" class="login-button">Đăng nhập</button>
+</form>
+
+@code {
+    private LoginModel loginModel { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        loginModel = new();
+    }
+
+    public async Task Login()
+    {
+        if(!loginModel.LoginAllowed) {
+            return;
+        }
+        LoginPayload loginPayload = new LoginPayload { Username = loginModel.Username, Password = loginModel.Password };
+        var result = await HttpClient.PostAsJsonAsync<LoginPayload>("/api/auth/login", loginPayload);
+        if(!result.IsSuccessStatusCode)
+        {
+            loginModel.Error = await result.Content.ReadAsStringAsync();
+        } 
+        else
+        {
+            Navigation.NavigateTo("/", true);
+        }
+    }
+    private class LoginModel
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Error { get; set; } = string.Empty;
+        public bool LoginAllowed => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
+    }
+ }  

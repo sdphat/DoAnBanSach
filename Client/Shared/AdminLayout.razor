@@ -1,0 +1,30 @@
+﻿@inherits LayoutComponentBase
+
+<AuthorizeView>
+    <Authorized>
+        <div class="page">
+            <div class="sidebar">
+                <AdminNavMenu />
+            </div>
+
+            <div class="main">
+                <div class="top-row px-4" style="background-color: #007bff">
+                    <h4 style="float: right;margin-right: 0.1rem;color:white">
+                        Huyền
+                    </h4>
+                    <a href="" style="float: right;">
+                        <button class="btn btn-outline-success my-2 my-sm-0" style="background-color: red;color:white;font-weight: 600;border-radius: 0.5rem;" type="submit">Đăng Xuất</button>
+                    </a>
+                </div>
+
+                <div class="content px-4">
+                    @Body
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <Authorizing></Authorizing>
+    <NotAuthorized>
+        <RedirectToAdminLogin />
+    </NotAuthorized>
+</AuthorizeView>

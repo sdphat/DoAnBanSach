@@ -1,0 +1,72 @@
+﻿@page "/admin"
+@using DoAnBanSach.Shared
+@layout AdminLayout
+@inject HttpClient HttpClient
+
+<style>
+    .admin-item {
+        width: 15rem;
+        height: 15rem;
+        background-color: #3884ff;
+        float: left;
+        margin: 1rem;
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+    }
+</style>
+<div style="width: 60%;">
+    <div class="admin-item">
+        <div style="text-align: center;width: 100%;font-size: 70px;">@Stats.Staffs</div>
+        <div style="text-align: center;width: 100%;font-size: 30px;">Nhân Viên</div>
+    </div>
+    <div class="admin-item">
+        <div style="text-align: center;width: 100%;font-size: 70px;">@Stats.Customers</div>
+        <div style="text-align: center;width: 100%;font-size: 30px;">Khách Hàng</div>
+    </div>
+    <div class="admin-item">
+        <div style="text-align: center;width: 100%;font-size: 70px;">@Stats.Products</div>
+        <div style="text-align: center;width: 100%;font-size: 30px;">Sản Phẩm</div>
+    </div>
+    <div class="admin-item">
+        <div style="text-align: center;width: 100%;font-size: 70px;">@Stats.Orders</div>
+        <div style="text-align: center;width: 100%;font-size: 30px;">Hóa Đơn</div>
+    </div>
+</div>
+
+<table class="table" style="width: 40%;font-size: 1.4rem;">
+    <tr>
+        <th colspan="2" style="text-align: center;">THÔNG TIN NHÂN VIÊN</th>
+    </tr>
+    <tr>
+        <th>Mã Nhân Viên</th>
+        <td>NV01</td>
+    </tr>
+    <tr>
+        <th>Họ Tên</th>
+        <td>Huyền</td>
+    </tr>
+    <tr>
+        <th>Ngày Sinh</th>
+        <td>12/05/2001</td>
+    </tr>
+    <tr>
+        <th>Giới Tính</th>
+        <td>Nữ</td>
+    </tr>
+    <tr>
+        <th>Địa Chỉ</th>
+        <td>TPHCM</td>
+    </tr>
+    <tr>
+        <th>SĐT</th>
+        <td>0853335392</td>
+    </tr>
+</table>
+@code {
+   public StatsResult Stats { get; set; } = new();
+   protected override async Task OnParametersSetAsync()
+    {
+       Stats = await HttpClient.GetFromJsonAsync<StatsResult>("/api/stats");
+    }
+}
